@@ -1,0 +1,192 @@
+/* src/pages/LevelSelect.css */
+
+/* --- Estilos para la Barra de Perfil --- */
+.profile-bar {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 2px solid #579dc5;
+  margin-bottom: 30px;
+  box-sizing: border-box;
+  overflow: hidden; /* Asegura que los botones internos no se salgan */
+}
+
+/* Botón de Perfil (Izquierda) */
+.profile-info-button {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 15px;
+  gap: 5px;
+  background: none;
+  border: none;
+  font-family: 'Press Start 2P', cursive;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-info-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.profile-username {
+  font-size: 1rem;
+  color: #fff;
+  font-weight: bold;
+}
+
+.profile-xp {
+  font-size: 1rem;
+  color: #FFFF00;
+  font-weight: bold;
+}
+
+/* ¡NUEVO! Contenedor para botones derechos */
+.profile-actions {
+  display: flex;
+  height: 100%;
+  align-self: stretch; /* Se estira verticalmente */
+}
+
+/* Botón de Ranking */
+.leaderboard-button {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.9rem;
+  color: #000;
+  background-color: #FFFF00;
+  border: none;
+  border-left: 2px solid #579dc5; /* Separador más delgado */
+  padding: 0 20px;
+  height: 100%;
+  align-self: stretch;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.leaderboard-button:hover {
+  background-color: #f1c40f;
+}
+
+/* ¡NUEVO! Botón de Cerrar Sesión */
+.logout-button {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.9rem;
+  color: #fff;
+  background-color: #e74c3c; /* Rojo */
+  border: none;
+  border-left: 2px solid #579dc5; /* Separador */
+  padding: 0 20px;
+  height: 100%;
+  align-self: stretch;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.logout-button:hover {
+  background-color: #c0392b; /* Rojo oscuro */
+}
+/* --- Fin de Estilos de Perfil --- */
+
+
+/* --- Estilos del Contenedor Principal y Títulos --- */
+.level-select-container {
+  min-height: 100vh;
+  padding: 40px 20px;
+  box-sizing: border-box;
+
+  /* Fondo (imagen + degradado) */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #0c0c1e; /* Color de respaldo */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.level-select-title {
+  font-size: 2.5rem;
+  color: #FFFF00;
+  text-shadow: 4px 4px 0px #000;
+  margin: 0;
+  margin-top: 0; 
+}
+
+.level-select-subtitle {
+  font-size: 1.2rem;
+  color: #fff;
+  text-shadow: 2px 2px 0px #000;
+  margin-top: 10px;
+  margin-bottom: 40px;
+}
+
+/* --- Estilos de la Lista de Niveles --- */
+.level-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.level-button {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1rem;
+  color: #fff;
+  background-color: rgba(30, 30, 59, 0.8); 
+  border: 4px solid #0e3a53;
+  width: 100%;
+  padding: 20px;
+  cursor: pointer;
+  text-align: left;
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.level-button:hover {
+  background-color: rgba(58, 58, 92, 0.9);
+  border-color: #FFFF00;
+  transform: scale(1.03);
+}
+
+.level-number {
+  color: #FFFF00;
+  margin-right: 20px;
+}
+
+.level-title {
+  color: #fff;
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+
+/* Colores para los tipos (según tu DB) */
+.type-basico { border-left: 10px solid #2ecc71; } /* verde */
+.type-intermedio { border-left: 10px solid #f1c40f; } /* amarillo */
+.type-dificil { border-left: 10px solid #e67e22; } /* naranja */
+.type-experto { border-left: 10px solid #9b59b6; } /* morado */
+.type-master { border-left: 10px solid #e74c3c; } /* rojo */
+
+/* --- Estilos de Carga y Error --- */
+.loading-screen, .error-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 100vh;
+  font-size: 1.5rem;
+  padding: 20px;
+  text-align: center;
+  background-color: #0c0c1e;
+  color: #fff;
+}
+
+.error-screen {
+  color: #ff3333; /* Rojo para el error */
+}

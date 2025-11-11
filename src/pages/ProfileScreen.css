@@ -1,0 +1,320 @@
+/* src/pages/ProfileScreen.css */
+
+.profile-container {
+  min-height: 100vh;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  background-color: #0c0c1e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-title {
+  font-size: 2.5rem;
+  color: #FFFF00;
+  text-shadow: 4px 4px 0px #000;
+  margin: 0;
+  margin-bottom: 30px;
+}
+
+/* --- Estilos de Pestañas --- */
+.profile-tabs {
+  display: flex;
+  width: 100%;
+  max-width: 800px;
+  border-bottom: 4px solid #0e3a53;
+  margin-bottom: 30px;
+}
+.tab-button {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1rem;
+  color: #aaa;
+  background: none;
+  border: none;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 4px solid transparent;
+  margin-bottom: -4px;
+}
+@media (max-width: 600px) {
+  .tab-button {
+    font-size: 0.8rem;
+    padding: 15px 10px;
+  }
+}
+.tab-button:hover { color: #fff; }
+.tab-button.active {
+  color: #FFFF00;
+  border-bottom-color: #FFFF00;
+}
+/* --- Fin de Estilos de Pestañas --- */
+
+
+.profile-section {
+  width: 100%;
+  max-width: 800px;
+}
+
+.profile-subtitle {
+  font-size: 1.5rem;
+  color: #fff;
+  border-bottom: 4px solid #579dc5;
+  padding-bottom: 10px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+.profile-empty-text {
+  font-size: 1rem;
+  color: #aaa;
+  text-align: center;
+  padding: 20px;
+}
+
+/* --- Estilos de Estadísticas --- */
+.stats-grid {
+  display: grid;
+  /* ¡MODIFICADO! Ahora son 3 columnas */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 40px; 
+}
+
+/* En pantallas pequeñas, haz que sean 2 columnas */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ¡NUEVO! Oculta la tarjeta vacía */
+.stat-card.empty {
+  background-color: transparent;
+  border: none;
+}
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: rgba(30, 30, 59, 0.8);
+  border: 4px solid #0e3a53;
+  padding: 25px 20px;
+}
+.stat-value {
+  font-size: 2.5rem;
+  color: #FFFF00; 
+  font-weight: bold;
+  line-height: 1.1;
+  word-break: break-all;
+}
+.stat-label {
+  font-size: 1rem;
+  color: #fff;
+  margin-top: 10px;
+}
+
+/* --- Estilos de Medallero --- */
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+.badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: rgba(30, 30, 59, 0.8);
+  border: 4px solid #0e3a53;
+  padding: 20px;
+  aspect-ratio: 1 / 1;
+  transition: all 0.2s ease;
+}
+.badge-card:hover {
+  transform: scale(1.05);
+  border-color: #FFFF00;
+}
+.badge-icon { font-size: 3rem; margin-bottom: 10px; }
+.badge-name { font-size: 1rem; color: #fff; font-weight: bold; }
+.badge-description { font-size: 0.8rem; color: #aaa; margin-top: 5px; }
+
+/* --- Estilos de Amigos --- */
+.friend-search-form {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+}
+.friend-search-input {
+  flex-grow: 1;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.9rem;
+  padding: 15px;
+  background-color: #3a3a5c;
+  border: 2px solid #0e3a53;
+  color: #fff;
+  outline: none;
+}
+.friend-search-input::placeholder { color: #aaa; }
+.friend-search-input:focus { border-color: #FFFF00; }
+.friend-search-button {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.9rem;
+  color: #000;
+  background-color: #FFFF00;
+  border: 2px solid #0e3a53;
+  padding: 0 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.friend-search-button:hover { background-color: #f1c40f; }
+.friend-search-button:disabled { background-color: #555; cursor: not-allowed; }
+
+.search-results-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 15px;
+  gap: 2px;
+}
+.search-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1a1a3a;
+  padding: 15px;
+  color: #fff;
+  border: 2px solid #0e3a53;
+}
+.add-friend-button {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  color: #000;
+  background-color: #2ecc71; /* Verde */
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.add-friend-button:hover { background-color: #28b463; }
+.error-text {
+  color: #ff3333;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.friend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.friend-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(30, 30, 59, 0.8);
+  border: 4px solid #0e3a53;
+  padding: 20px;
+}
+.friend-card.pending {
+  border-color: #f1c40f; /* Amarillo para pendientes */
+}
+.friend-username {
+  font-size: 1.2rem;
+  color: #fff;
+}
+.friend-status {
+  font-size: 0.9rem;
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 4px;
+  text-transform: capitalize;
+}
+.status-pending {
+  color: #000;
+  background-color: #f1c40f; /* Amarillo */
+}
+.status-accepted {
+  color: #000;
+  background-color: #2ecc71; /* Verde */
+}
+.status-blocked {
+  color: #fff;
+  background-color: #e74c3c; /* Rojo */
+}
+
+/* Acciones de amigos (Aceptar/Rechazar/Eliminar) */
+.friend-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.friend-button {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  color: #000;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.friend-button.accept {
+  background-color: #2ecc71; /* Verde */
+}
+.friend-button.accept:hover {
+  background-color: #28b463;
+}
+.friend-button.decline {
+  background-color: #e74c3c; /* Rojo */
+  color: #fff;
+}
+.friend-button.decline:hover {
+  background-color: #c0392b;
+}
+
+/* Estilo para la racha del amigo */
+.friend-streak {
+  font-size: 1.2rem;
+  color: #f1c40f; /* Naranja/Amarillo */
+  font-weight: bold;
+  margin-right: 20px; 
+  display: flex;
+  align-items: center;
+}
+/* --- Fin de Estilos de Amigos --- */
+
+
+/* Botón para volver (sin cambios) */
+.back-button-profile {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  color: #FFFFFF;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 2px solid #FFFFFF;
+  padding: 10px 15px;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+.back-button-profile:hover {
+  background-color: #FFFFFF;
+  color: #000000;
+}
+
+/* Estilos de carga/error (sin cambios) */
+.loading-screen, .error-screen {
+  font-size: 1.2rem;
+  color: #aaa;
+  text-align: center;
+  padding: 40px;
+}
+.error-screen {
+  color: #ff3333;
+}
