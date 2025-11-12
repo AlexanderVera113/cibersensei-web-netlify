@@ -145,7 +145,7 @@ const LevelSelect: React.FC = () => {
         <div className="profile-bar">
           <button 
             className="profile-info-button"
-            onClick={() => navigate('/profile')} 
+            onClick={() => navigate('/ProfileScreen')} 
           >
             <span className="profile-username">@{profile.username}</span>
             <span className="profile-xp">{profile.xp} XP</span>
