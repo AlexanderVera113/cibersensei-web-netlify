@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient'; 
 import './QuizScreen.css';
 
-// --- Importaciones de Personajes y Fondos (Tus nombres de archivo) ---
+// --- Tus importaciones de Personajes y Fondos ---
 import charBasico from '../assets/characters/bg-cat.png';
 import charIntermedio from '../assets/characters/bg-panda.png';
 import charDificil from '../assets/characters/bg-alien.png';
@@ -17,7 +17,7 @@ import bgDificil from '../assets/backgrounds/bg-alien-fondo.png';
 import bgExperto from '../assets/backgrounds/bg-necro-fondo.png';
 import bgMaster from '../assets/backgrounds/bg-cyber-fondo.png';
 
-// --- Mapas de Assets (sin cambios) ---
+// --- Mapas de Assets ---
 const characterMap: { [key: string]: string } = {
   'Basico': charBasico,
   'Intermedio': charIntermedio,
@@ -33,7 +33,7 @@ const backgroundMap: { [key: string]: string } = {
   'Master': bgMaster,
 };
 
-// --- Interfaces (sin cambios) ---
+// --- Interfaces ---
 interface Choice {
   id: string;
   text: string;
@@ -66,17 +66,12 @@ const QuizScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  
-  // ID del intento actual para guardar el tiempo
-  const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(null);
-
-  // Estados del Quiz
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null); 
   const [feedback, setFeedback] = useState<string>('');
   const [isAnswered, setIsAnswered] = useState(false);
 
   
-  // --- useEffect (Con la lógica de 'started_at') ---
+  // --- useEffect (La versión que sí funciona) ---
   useEffect(() => {
     const loadQuizData = async () => {
       setLoading(true);
@@ -85,7 +80,6 @@ const QuizScreen: React.FC = () => {
       setSelectedOptionId(null);
       setFeedback('');
       setIsAnswered(false);
-      setCurrentAttemptId(null); 
 
       if (!missionId) {
         setError('No se ha especificado ninguna misión.');
@@ -93,9 +87,10 @@ const QuizScreen: React.FC = () => {
         return;
       }
       
-      // 1. Obtener el ID del usuario
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+        console.error("Usuario no logueado:", authError);
         setError("No estás autenticado. Volviendo al login...");
         setLoading(false);
         setTimeout(() => navigate('/'), 2000);
@@ -103,7 +98,7 @@ const QuizScreen: React.FC = () => {
       }
       setCurrentUserId(user.id);
 
-      // 2. Cargar la Misión
+      // Carga la misión
       const { data: missionData, error: missionError } = await supabase
         .from('missions')
         .select('*')
@@ -111,36 +106,20 @@ const QuizScreen: React.FC = () => {
         .limit(1)
         .single(); 
 
-      if (missionError || !missionData) {
-        setError('Misión no encontrada o error al cargar.');
+      if (missionError) {
+        console.error('Error cargando la misión:', missionError);
+        setError(`No se pudo cargar la misión: ${missionError.message}`);
+        setLoading(false);
+        return;
+      }
+      
+      if (!missionData) {
+        setError('Misión no encontrada. (ID no existe)');
         setLoading(false);
         return;
       }
 
-      // 3. Crear el "Intento" (Attempt) para registrar 'started_at'
-      try {
-        const { data: attemptData, error: attemptError } = await supabase
-          .from('attempts')
-          .insert({
-              user_id: user.id,
-              mission_id: missionData.id,
-              started_at: new Date().toISOString() // ¡Hora de inicio!
-          })
-          .select('id') 
-          .single();
-        
-        if (attemptError) throw attemptError;
-        
-        setCurrentAttemptId(attemptData.id); // ¡Guarda el ID del intento!
-
-      } catch (attemptError: any) {
-        console.error('Error al crear el intento:', attemptError);
-        setError('Error al iniciar la misión. Revisa los permisos RLS de INSERT en attempts.');
-        setLoading(false);
-        return;
-      }
-
-      // 4. Configurar la pantalla
+      // Configura la pantalla
       const mission = missionData as Mission;
       setCurrentMission(mission);
       const missionType = mission.type; 
@@ -155,18 +134,16 @@ const QuizScreen: React.FC = () => {
   }, [missionId, navigate]); 
 
 
-  // --- ¡FUNCIONES CORREGIDAS (con '=>')! ---
-
+  // --- Función 1: Seleccionar Opción (sin cambios) ---
   const handleOptionClick = (option: Choice) => {
     if (isAnswered) return;
     setSelectedOptionId(option.id);
     setFeedback('');
   };
 
+  // --- Función 2: Enviar Respuesta (La versión que sí funciona) ---
   const handleSubmitAnswer = async () => {
-    if (!selectedOptionId || isAnswered || !currentMission || !currentUserId || !currentAttemptId) {
-      return;
-    }
+    if (!selectedOptionId || isAnswered || !currentMission || !currentUserId) return;
     setIsAnswered(true);
 
     const chosenChoice = currentMission.payload.choices.find(
@@ -177,7 +154,7 @@ const QuizScreen: React.FC = () => {
     const isCorrect = chosenChoice.isCorrect;
     const pointsToAdd = isCorrect ? currentMission.payload.scoring.points : 0;
 
-    // --- Lógica de 'attempts' (UPDATE) ---
+    // --- Lógica de 'attempts' (Guarda el intento para las medallas) ---
     const attemptResult = {
       correct: isCorrect,
       score: pointsToAdd
@@ -185,16 +162,18 @@ const QuizScreen: React.FC = () => {
     
     const { error: attemptError } = await supabase
       .from('attempts')
-      .update({
-          finished_at: new Date().toISOString(), // ¡Hora de fin!
-          result: attemptResult
-      })
-      .eq('id', currentAttemptId); // Actualiza la fila correcta
+      .insert({
+          user_id: currentUserId,
+          mission_id: currentMission.id,
+          finished_at: new Date().toISOString(), // Guarda la hora de fin
+          result: attemptResult 
+      });
 
     if (attemptError) {
-      console.error('Error al actualizar el intento:', attemptError);
+      console.error('Error al guardar el intento:', attemptError);
     }
     // --- FIN DEL BLOQUE DE 'ATTEMPTS' ---
+
 
     // PASO 2: Actualiza el XP (sin cambios)
     if (isCorrect) {
@@ -215,10 +194,12 @@ const QuizScreen: React.FC = () => {
     }
   };
 
+  // --- Función 3: Volver al Mapa (sin cambios) ---
   const handleGoBack = () => {
     navigate('/levels');
   };
 
+  // --- Función 4: Siguiente Misión (sin cambios) ---
   const handleNextMission = async () => {
     if (!currentMission) return;
     const nextLevel = currentMission.level + 1;

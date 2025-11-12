@@ -6,16 +6,15 @@ import { supabase } from '../supabaseClient';
 import './LevelSelect.css'; 
 
 // Importamos el fondo de montañas
-import levelSelectBackground from '../assets/backgrounds/bg-levels.png'; //
+import levelSelectBackground from '../assets/backgrounds/bg-levels.jpg'; //
 
-// Interfaz para los datos de la misión
+// Interfaz (sin cambios)
 interface MissionInfo {
   id: string;
   level: number;
   title: string; 
   type: string;
 }
-// Interfaz para el perfil del usuario
 interface UserProfile {
   username: string;
   xp: number;
@@ -42,12 +41,11 @@ const LevelSelect: React.FC = () => {
         console.error("No hay usuario logueado:", authError);
         setError("No estás autenticado.");
         setLoading(false);
-        // Opcional: redirigir al login
         setTimeout(() => navigate('/'), 2000); 
         return;
       }
 
-      // 2. Preparar todas las consultas
+      // 2. Preparar todas las consultas (sin cambios)
       const fetchMissions = supabase
         .from('missions')
         .select('id, level, type, payload->title')
@@ -65,35 +63,38 @@ const LevelSelect: React.FC = () => {
         .eq('user_id', user.id)
         .single();
 
-      // 3. Ejecutar todas las consultas en paralelo
+      // 3. Ejecutar todas las consultas en paralelo (sin cambios)
       const [missionsResult, profileResult, statsResult] = await Promise.all([
         fetchMissions,
         fetchProfile,
         fetchStats
       ]);
 
+      // --- ¡AQUÍ ESTÁ EL ARREGLO! ---
       // 4. Procesar misiones
       if (missionsResult.error) {
         console.error('Error cargando misiones:', missionsResult.error);
         setError('No se pudieron cargar los niveles.');
       } else if (missionsResult.data) {
+        
         const formattedData = missionsResult.data.map(mission => ({
           id: mission.id,
           level: mission.level,
           type: mission.type,
-          title: mission.title || 'Nivel sin título'
+          // ¡ARREGLO! Forzamos el 'title' a ser un 'string'
+          title: String(mission.title || 'Nivel sin título') 
         }));
-        setMissions(formattedData);
+        
+        setMissions(formattedData); // Esta era la línea 86 que fallaba
       }
+      // --- FIN DEL ARREGLO ---
 
-      // 5. Procesar perfil y puntaje
+      // 5. Procesar perfil y puntaje (sin cambios)
       if (profileResult.error) {
         console.error('Error cargando perfil:', profileResult.error);
         setError('No se pudo cargar tu perfil.');
       } else {
-        // Asigna 0 XP si el usuario aún no tiene fila en user_stats
         const userXP = statsResult.data?.xp || 0;
-        
         setProfile({
           username: profileResult.data?.username || 'Sensei',
           xp: userXP
@@ -104,7 +105,7 @@ const LevelSelect: React.FC = () => {
     };
 
     fetchData();
-  }, [navigate]); // Dependencia 'navigate' añadida
+  }, [navigate]); 
   
   // Función de Clic (sin cambios)
   const handleLevelClick = (levelId: string) => {
@@ -112,20 +113,19 @@ const LevelSelect: React.FC = () => {
     navigate(`/quiz/${levelId}`);
   };
 
-  // --- ¡NUEVA FUNCIÓN DE CERRAR SESIÓN! ---
+  // Función de Cerrar Sesión (sin cambios)
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('Error al cerrar sesión:', error);
       alert(error.message);
     } else {
-      // Redirige al usuario a la pantalla de Login
       navigate('/');
     }
   };
 
 
-  // --- Renderizado ---
+  // --- Renderizado (sin cambios) ---
   if (loading) {
     return <div className="loading-screen">Cargando Niveles...</div>;
   }
@@ -141,19 +141,15 @@ const LevelSelect: React.FC = () => {
       }}
     >
       
-      {/* --- ¡BARRA DE PERFIL MODIFICADA! --- */}
       {profile && (
         <div className="profile-bar">
-          {/* Botón de Perfil (Izquierda) */}
           <button 
             className="profile-info-button"
-            onClick={() => navigate('/ProfileScreen')} // <-- ¡RUTA CORREGIDA!
+            onClick={() => navigate('/profile')} 
           >
             <span className="profile-username">@{profile.username}</span>
             <span className="profile-xp">{profile.xp} XP</span>
           </button>
-          
-          {/* Agrupación de botones (Derecha) */}
           <div className="profile-actions">
             <button 
               className="leaderboard-button" 
@@ -161,7 +157,6 @@ const LevelSelect: React.FC = () => {
             >
               Ranking
             </button>
-            {/* ¡NUEVO BOTÓN DE CERRAR SESIÓN! */}
             <button 
               className="logout-button"
               onClick={handleLogout}
@@ -171,12 +166,10 @@ const LevelSelect: React.FC = () => {
           </div>
         </div>
       )}
-      {/* --- FIN DE LA BARRA DE PERFIL --- */}
 
       <h1 className="level-select-title">CiberSensei</h1>
       <h2 className="level-select-subtitle">Selección de Misión</h2>
 
-      {/* Lista de Niveles (sin cambios) */}
       <div className="level-list">
         {missions.map((mission) => (
           <button 
