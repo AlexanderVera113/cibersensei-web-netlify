@@ -23,14 +23,14 @@ import bgMaster from '../assets/backgrounds/bg-cyber-fondo.png';
 const characterMap: { [key: string]: string } = {
   'Basico': charBasico,
   'Intermedio': charIntermedio,
-  'Dificil': charDificil,
+  'dificil': charDificil,
   'Experto': charExperto,
   'Master': charMaster,
 };
 const backgroundMap: { [key: string]: string } = {
   'Basico': bgBasico,
   'Intermedio': bgIntermedio,
-  'Dificil': bgDificil,
+  'dificil': bgDificil,
   'Experto': bgExperto,
   'Master': bgMaster,
 };
@@ -55,23 +55,12 @@ interface Mission {
   payload: QuizPayload;
 }
 
-// --- CONFIGURACIÓN DE PROGRESIÓN (¡ACTUALIZADA!) ---
-// Define cuándo ir a la PRUEBA DE ASCENSO
-// (Ej: Al terminar el nivel 8, vas al 9)
+// --- Configuración de Progresión ---
 const LEVEL_TO_TEST_MAP: { [key: number]: number } = {
-  8: 9,   // Fin de Básico -> Prueba
-  17: 18, // Fin de Intermedio -> Prueba
-  26: 27, // Fin de Difícil -> Prueba
-  35: 36, // Fin de Experto -> Prueba
-  44: 45  // Fin de Master -> Prueba Final
+  8: 9, 17: 18, 26: 27, 35: 36, 44: 45
 };
-
-// Define a dónde ir después de aprobar la PRUEBA
 const TEST_TO_NEXT_LEVEL_MAP: { [key: number]: number } = {
-  9: 10,  // Pasas a Intermedio
-  18: 19, // Pasas a Difícil
-  27: 28, // Pasas a Experto
-  36: 37  // Pasas a Master
+  9: 10, 18: 19, 27: 28, 36: 37
 };
 
 
@@ -93,7 +82,7 @@ const QuizScreen: React.FC = () => {
   const [isAnswered, setIsAnswered] = useState(false);
 
   
-  // --- useEffect (Carga Inicial Segura) ---
+  // --- useEffect ---
   useEffect(() => {
     const loadQuizData = async () => {
       setLoading(true);
@@ -110,8 +99,9 @@ const QuizScreen: React.FC = () => {
         return;
       }
       
-      // 1. Autenticación
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      // 1. Autenticación (CORREGIDO: Quitamos 'authError' que no se usaba)
+      const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
         setError("No estás autenticado. Volviendo al login...");
         setLoading(false);
@@ -135,7 +125,7 @@ const QuizScreen: React.FC = () => {
         return;
       }
 
-      // 3. Crear Intento (Registra tiempo de inicio)
+      // 3. Crear Intento
       try {
         const { data: attemptData, error: attemptError } = await supabase
           .from('attempts')
@@ -152,17 +142,14 @@ const QuizScreen: React.FC = () => {
 
       } catch (attemptError: any) {
         console.error('Error al crear el intento:', attemptError);
-        // No bloqueamos el juego si falla el intento, pero es bueno saberlo
       }
 
       // 4. Configurar UI
       const mission = missionData as Mission;
       setCurrentMission(mission);
-      
       const missionType = mission.type; 
       const charImgSrc = characterMap[missionType];
       setCharacterImage(charImgSrc || charBasico); 
-
       const backgroundImgSrc = backgroundMap[missionType]; 
       setBackgroundImage(backgroundImgSrc || bgBasico); 
       
@@ -193,7 +180,7 @@ const QuizScreen: React.FC = () => {
     const isCorrect = chosenChoice.isCorrect;
     const pointsToAdd = isCorrect ? currentMission.payload.scoring.points : 0;
 
-    // 1. Actualizar el intento (tiempo fin + resultado)
+    // Actualizar Intento
     const attemptResult = {
       correct: isCorrect,
       score: pointsToAdd
@@ -209,7 +196,7 @@ const QuizScreen: React.FC = () => {
 
     if (updateError) console.error("Error actualizando intento:", updateError);
 
-    // 2. Actualizar XP y dar feedback
+    // Actualizar XP
     if (isCorrect) {
       await supabase.rpc('increment_xp', {
         user_id_input: currentUserId,
@@ -226,12 +213,11 @@ const QuizScreen: React.FC = () => {
     navigate('/levels');
   };
 
-  // --- LÓGICA DE PROGRESIÓN INTELIGENTE ---
+  // --- Lógica de Progresión ---
   const handleNextMission = async () => {
     if (!currentMission || !currentUserId) return;
     setLoading(true); 
 
-    // 1. ¿Qué misiones ya completé?
     const { data: attemptsData } = await supabase
       .from('attempts')
       .select('mission_id')
@@ -240,7 +226,6 @@ const QuizScreen: React.FC = () => {
     const completedSet = new Set(attemptsData?.map(a => a.mission_id));
     completedSet.add(currentMission.id); 
 
-    // 2. ¿Hay más misiones en ESTE nivel?
     const { data: levelMissions } = await supabase
       .from('missions')
       .select('id')
@@ -253,23 +238,16 @@ const QuizScreen: React.FC = () => {
       return;
     }
 
-    // 3. Si no, ¿a qué nivel salto?
     let nextLevelTarget: number | null = null;
 
-    // A) Si estoy en un nivel normal y hay prueba definida (ej: 8 -> 9)
     if (LEVEL_TO_TEST_MAP[currentMission.level]) {
       nextLevelTarget = LEVEL_TO_TEST_MAP[currentMission.level];
-    } 
-    // B) Si estoy en una prueba y hay siguiente bloque definido (ej: 9 -> 10)
-    else if (TEST_TO_NEXT_LEVEL_MAP[currentMission.level]) {
+    } else if (TEST_TO_NEXT_LEVEL_MAP[currentMission.level]) {
       nextLevelTarget = TEST_TO_NEXT_LEVEL_MAP[currentMission.level];
-    } 
-    // C) Por defecto, intenta el siguiente número
-    else {
+    } else {
       nextLevelTarget = currentMission.level + 1;
     }
     
-    // 4. Buscar la misión del nivel objetivo
     const { data: nextLevelMission } = await supabase
       .from('missions')
       .select('id')
@@ -280,7 +258,7 @@ const QuizScreen: React.FC = () => {
     if (nextLevelMission) {
       navigate(`/quiz/${nextLevelMission.id}`);
     } else {
-      alert('¡Has completado todas las misiones disponibles! Volviendo al mapa.');
+      alert('¡Nivel completado! Volviendo al mapa.');
       navigate('/levels');
     }
     
@@ -288,7 +266,6 @@ const QuizScreen: React.FC = () => {
   };
 
 
-  // --- Renderizado ---
   if (loading) { return <div className="loading-screen">Cargando Misión...</div>; }
   if (error) { return <div className="error-screen">{error}</div>; }
   if (!currentMission) { return <div className="error-screen">Misión no encontrada.</div>; }
@@ -308,7 +285,6 @@ const QuizScreen: React.FC = () => {
 
       <div className="quiz-box">
         <p className="question-text">{currentMission.payload.question}</p>
-        
         <div className="options-grid">
           {currentMission.payload.choices.map((choice) => (
             <button 
