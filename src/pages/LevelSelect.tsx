@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import './LevelSelect.css'; 
 
-import levelSelectBackground from '../assets/backgrounds/bg-levels.png';
+// Importamos el fondo de montañas (Asegúrate de que sea .jpg si ese es el archivo que tienes)
+import levelSelectBackground from '../assets/backgrounds/bg-levels.jpg';
 
 // Interfaces
 interface MissionInfo {
@@ -19,38 +20,13 @@ interface UserProfile {
   xp: number;
 }
 
-// --- CONFIGURACIÓN DE ETAPAS (RANGOS NUEVOS) ---
+// --- CONFIGURACIÓN DE ETAPAS ---
 const STAGES = [
-  { 
-    title: 'Fundamentos (Básico)', 
-    min: 1, max: 8, // Niveles 1 al 8
-    testLevel: 9,   // Prueba Nivel 9
-    style: 'basico' 
-  },
-  { 
-    title: 'Amenazas (Intermedio)', 
-    min: 10, max: 17, // Niveles 10 al 17
-    testLevel: 18,    // Prueba Nivel 18
-    style: 'intermedio' 
-  },
-  { 
-    title: 'Defensa (Difícil)', 
-    min: 19, max: 26, // Niveles 19 al 26
-    testLevel: 27,    // Prueba Nivel 27
-    style: 'dificil' 
-  },
-  { 
-    title: 'Hacking Ético (Experto)', 
-    min: 28, max: 35, // Niveles 28 al 35
-    testLevel: 36,    // Prueba Nivel 36
-    style: 'experto' 
-  },
-  { 
-    title: 'Ciberseguridad Total (Master)', 
-    min: 37, max: 44, // Niveles 37 al 44
-    testLevel: 45,    // Prueba Nivel 45
-    style: 'master' 
-  },
+  { title: 'Fundamentos (Básico)', min: 1, max: 8, testLevel: 9, style: 'basico' },
+  { title: 'Amenazas (Intermedio)', min: 10, max: 17, testLevel: 18, style: 'intermedio' },
+  { title: 'Defensa (Difícil)', min: 19, max: 26, testLevel: 27, style: 'dificil' },
+  { title: 'Hacking Ético (Experto)', min: 28, max: 35, testLevel: 36, style: 'experto' },
+  { title: 'Ciberseguridad Total (Master)', min: 37, max: 44, testLevel: 45, style: 'master' },
 ];
 
 const LevelSelect: React.FC = () => {
@@ -65,6 +41,7 @@ const LevelSelect: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      // 1. Usuario
       const { data: { user }, error: authError } = await supabase.auth.getUser();
 
       if (authError || !user) {
@@ -75,6 +52,7 @@ const LevelSelect: React.FC = () => {
         return;
       }
 
+      // 2. Consultas
       const fetchMissions = supabase
         .from('missions')
         .select('id, level, type, payload->title')
@@ -98,16 +76,22 @@ const LevelSelect: React.FC = () => {
         fetchStats
       ]);
 
+      // 3. Procesar resultados
       if (missionsResult.error) {
         console.error('Error cargando misiones:', missionsResult.error);
         setError('No se pudieron cargar los niveles.');
       } else if (missionsResult.data) {
+        
+        // --- ¡CORRECCIÓN AQUÍ! ---
+        // Convertimos explícitamente 'title' a String para evitar el error TS2345
         const formattedData = missionsResult.data.map(mission => ({
           id: mission.id,
           level: mission.level,
           type: mission.type,
           title: String(mission.title || 'Nivel sin título') 
         }));
+        // -------------------------
+
         setMissions(formattedData);
       }
 
@@ -171,13 +155,8 @@ const LevelSelect: React.FC = () => {
       <h2 className="level-select-subtitle">Selección de Misión</h2>
 
       <div className="level-list">
-        {/* --- RENDERIZADO POR RANGOS --- */}
         {STAGES.map((stage) => {
-          
-          // 1. Filtrar misiones dentro del RANGO (min a max)
           const stageMissions = missions.filter(m => m.level >= stage.min && m.level <= stage.max);
-          
-          // 2. Buscar la prueba de ascenso específica
           const testMission = missions.find(m => m.level === stage.testLevel);
 
           if (stageMissions.length === 0 && !testMission) return null;
@@ -186,7 +165,6 @@ const LevelSelect: React.FC = () => {
             <div key={stage.title} className={`stage-section stage-${stage.style}`}>
               <h3 className="stage-title">{stage.title}</h3>
               
-              {/* Lista de Niveles Normales */}
               <div className="stage-grid">
                 {stageMissions.map((mission) => (
                   <button 
@@ -194,14 +172,12 @@ const LevelSelect: React.FC = () => {
                     className={`level-button normal type-${stage.style}`}
                     onClick={() => handleLevelClick(mission.id)}
                   >
-                    {/* Mostramos el número real del nivel */}
                     <span className="level-number">{mission.level}</span>
                     <span className="level-title-small">{mission.title}</span>
                   </button>
                 ))}
               </div>
 
-              {/* Prueba de Ascenso */}
               {testMission && (
                 <button 
                   className={`level-button boss type-${stage.style}`}
