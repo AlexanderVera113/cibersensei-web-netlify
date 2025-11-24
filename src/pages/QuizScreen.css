@@ -1,4 +1,4 @@
-/* src/pages/QuizScreen.css (COMPLETO Y CORREGIDO) */
+/* src/pages/QuizScreen.css */
 
 .quiz-container {
   display: flex;
@@ -7,14 +7,12 @@
   justify-content: flex-end; /* Alinea todo hacia abajo */
   min-height: 100vh;
   padding: 20px;
-  box-sizing: border-box; /* Para que el padding no cause scroll */
+  box-sizing: border-box; 
 
-  /* Estas propiedades preparan el fondo */
+  /* Propiedades para el fondo */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  
-  /* Color de fondo oscuro por si no hay imagen */
   background-color: #0c0c1e; 
 }
 
@@ -26,23 +24,10 @@
   min-height: 200px; 
 }
 
-/* Estilo para tu personaje */
 .character-sprite {
-  width: 250px; 
+  width: 250px;
   height: auto;
   image-rendering: pixelated; 
-}
-
-.character-placeholder {
-  width: 200px;
-  height: 200px;
-  border: 4px dashed #555;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 10px;
-  color: #555;
 }
 
 /* La caja de diálogo azul/oscura */
@@ -69,7 +54,7 @@
 .options-grid {
   display: flex;
   flex-direction: column;
-  gap: 16px; /* Espacio entre botones */
+  gap: 16px; 
 }
 
 .option-button {
@@ -94,9 +79,6 @@
   color: #888;
   cursor: not-allowed;
   transform: none;
-}
-.option-button:disabled:hover {
-  background-color: #2a2a4c;
 }
 
 .level-title-bar {
@@ -123,7 +105,7 @@
   font-family: 'Press Start 2P', cursive;
   font-size: 1.2rem;
   color: #000000;
-  background-color: #FFFF00; /* Amarillo brillante */
+  background-color: #FFFF00; 
   border: 4px solid #0e3a53;
   padding: 15px;
   width: 100%;
@@ -145,7 +127,7 @@
   transform: none;
 }
 
-/* Estilos para los botones "Volver" y "Siguiente" */
+/* Estilos para los botones de navegación */
 .post-answer-controls {
   display: flex;
   justify-content: space-between;
@@ -179,7 +161,7 @@
   background-color: #f1c40f;
 }
 
-/* Estilos de carga/error (los que faltaban) */
+/* Estilos de carga y error */
 .loading-screen, .error-screen {
   display: flex;
   align-items: center;
@@ -194,5 +176,5 @@
 }
 
 .error-screen {
-  color: #ff3333; /* Rojo para el error */
+  color: #ff3333;
 }

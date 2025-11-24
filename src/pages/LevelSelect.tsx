@@ -5,10 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import './LevelSelect.css'; 
 
-// Importamos el fondo de montañas
-import levelSelectBackground from '../assets/backgrounds/bg-levels.png'; //
+import levelSelectBackground from '../assets/backgrounds/bg-levels.png';
 
-// Interfaz (sin cambios)
+// Interfaces
 interface MissionInfo {
   id: string;
   level: number;
@@ -20,6 +19,39 @@ interface UserProfile {
   xp: number;
 }
 
+// --- CONFIGURACIÓN DE ETAPAS (RANGOS NUEVOS) ---
+const STAGES = [
+  { 
+    title: 'Fundamentos (Básico)', 
+    min: 1, max: 8, // Niveles 1 al 8
+    testLevel: 9,   // Prueba Nivel 9
+    style: 'basico' 
+  },
+  { 
+    title: 'Amenazas (Intermedio)', 
+    min: 10, max: 17, // Niveles 10 al 17
+    testLevel: 18,    // Prueba Nivel 18
+    style: 'intermedio' 
+  },
+  { 
+    title: 'Defensa (Difícil)', 
+    min: 19, max: 26, // Niveles 19 al 26
+    testLevel: 27,    // Prueba Nivel 27
+    style: 'dificil' 
+  },
+  { 
+    title: 'Hacking Ético (Experto)', 
+    min: 28, max: 35, // Niveles 28 al 35
+    testLevel: 36,    // Prueba Nivel 36
+    style: 'experto' 
+  },
+  { 
+    title: 'Ciberseguridad Total (Master)', 
+    min: 37, max: 44, // Niveles 37 al 44
+    testLevel: 45,    // Prueba Nivel 45
+    style: 'master' 
+  },
+];
 
 const LevelSelect: React.FC = () => {
   const [missions, setMissions] = useState<MissionInfo[]>([]);
@@ -28,13 +60,11 @@ const LevelSelect: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate(); 
 
-  // Carga el perfil del usuario Y las misiones
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
-      // 1. Obtener el ID del usuario (esencial)
       const { data: { user }, error: authError } = await supabase.auth.getUser();
 
       if (authError || !user) {
@@ -45,7 +75,6 @@ const LevelSelect: React.FC = () => {
         return;
       }
 
-      // 2. Preparar todas las consultas (sin cambios)
       const fetchMissions = supabase
         .from('missions')
         .select('id, level, type, payload->title')
@@ -63,33 +92,25 @@ const LevelSelect: React.FC = () => {
         .eq('user_id', user.id)
         .single();
 
-      // 3. Ejecutar todas las consultas en paralelo (sin cambios)
       const [missionsResult, profileResult, statsResult] = await Promise.all([
         fetchMissions,
         fetchProfile,
         fetchStats
       ]);
 
-      // --- ¡AQUÍ ESTÁ EL ARREGLO! ---
-      // 4. Procesar misiones
       if (missionsResult.error) {
         console.error('Error cargando misiones:', missionsResult.error);
         setError('No se pudieron cargar los niveles.');
       } else if (missionsResult.data) {
-        
         const formattedData = missionsResult.data.map(mission => ({
           id: mission.id,
           level: mission.level,
           type: mission.type,
-          // ¡ARREGLO! Forzamos el 'title' a ser un 'string'
           title: String(mission.title || 'Nivel sin título') 
         }));
-        
-        setMissions(formattedData); // Esta era la línea 86 que fallaba
+        setMissions(formattedData);
       }
-      // --- FIN DEL ARREGLO ---
 
-      // 5. Procesar perfil y puntaje (sin cambios)
       if (profileResult.error) {
         console.error('Error cargando perfil:', profileResult.error);
         setError('No se pudo cargar tu perfil.');
@@ -107,17 +128,13 @@ const LevelSelect: React.FC = () => {
     fetchData();
   }, [navigate]); 
   
-  // Función de Clic (sin cambios)
   const handleLevelClick = (levelId: string) => {
-    console.log('Navegando al quiz:', levelId);
     navigate(`/quiz/${levelId}`);
   };
 
-  // Función de Cerrar Sesión (sin cambios)
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Error al cerrar sesión:', error);
       alert(error.message);
     } else {
       navigate('/');
@@ -125,13 +142,8 @@ const LevelSelect: React.FC = () => {
   };
 
 
-  // --- Renderizado (sin cambios) ---
-  if (loading) {
-    return <div className="loading-screen">Cargando Niveles...</div>;
-  }
-  if (error) {
-    return <div className="error-screen">{error}</div>;
-  }
+  if (loading) { return <div className="loading-screen">Cargando Niveles...</div>; }
+  if (error) { return <div className="error-screen">{error}</div>; }
 
   return (
     <div 
@@ -141,28 +153,16 @@ const LevelSelect: React.FC = () => {
       }}
     >
       
+      {/* --- Barra de Perfil --- */}
       {profile && (
         <div className="profile-bar">
-          <button 
-            className="profile-info-button"
-            onClick={() => navigate('/ProfileScreen')} 
-          >
+          <button className="profile-info-button" onClick={() => navigate('/profile')}>
             <span className="profile-username">@{profile.username}</span>
             <span className="profile-xp">{profile.xp} XP</span>
           </button>
           <div className="profile-actions">
-            <button 
-              className="leaderboard-button" 
-              onClick={() => navigate('/leaderboard')}
-            >
-              Ranking
-            </button>
-            <button 
-              className="logout-button"
-              onClick={handleLogout}
-            >
-              Salir
-            </button>
+            <button className="leaderboard-button" onClick={() => navigate('/leaderboard')}>Ranking</button>
+            <button className="logout-button" onClick={handleLogout}>Salir</button>
           </div>
         </div>
       )}
@@ -171,16 +171,52 @@ const LevelSelect: React.FC = () => {
       <h2 className="level-select-subtitle">Selección de Misión</h2>
 
       <div className="level-list">
-        {missions.map((mission) => (
-          <button 
-            key={mission.id}
-            className={`level-button type-${mission.type.toLowerCase()}`}
-            onClick={() => handleLevelClick(mission.id)}
-          >
-            <span className="level-number">Nivel {mission.level}</span>
-            <span className="level-title">{mission.title}</span>
-          </button>
-        ))}
+        {/* --- RENDERIZADO POR RANGOS --- */}
+        {STAGES.map((stage) => {
+          
+          // 1. Filtrar misiones dentro del RANGO (min a max)
+          const stageMissions = missions.filter(m => m.level >= stage.min && m.level <= stage.max);
+          
+          // 2. Buscar la prueba de ascenso específica
+          const testMission = missions.find(m => m.level === stage.testLevel);
+
+          if (stageMissions.length === 0 && !testMission) return null;
+
+          return (
+            <div key={stage.title} className={`stage-section stage-${stage.style}`}>
+              <h3 className="stage-title">{stage.title}</h3>
+              
+              {/* Lista de Niveles Normales */}
+              <div className="stage-grid">
+                {stageMissions.map((mission) => (
+                  <button 
+                    key={mission.id}
+                    className={`level-button normal type-${stage.style}`}
+                    onClick={() => handleLevelClick(mission.id)}
+                  >
+                    {/* Mostramos el número real del nivel */}
+                    <span className="level-number">{mission.level}</span>
+                    <span className="level-title-small">{mission.title}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Prueba de Ascenso */}
+              {testMission && (
+                <button 
+                  className={`level-button boss type-${stage.style}`}
+                  onClick={() => handleLevelClick(testMission.id)}
+                >
+                  <span className="boss-icon">💀</span>
+                  <div className="boss-info">
+                    <span className="boss-label">PRUEBA DE ASCENSO</span>
+                    <span className="boss-title">{testMission.title}</span>
+                  </div>
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
