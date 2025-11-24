@@ -6,10 +6,10 @@ import { supabase } from '../supabaseClient';
 import './QuizScreen.css';
 
 // --- Importaciones de Personajes ---
-import charBasico from '../assets/characters/bg-cat.png';
+import charBasico from '../assets/characters/cat_enteroi.gif';
 import charIntermedio from '../assets/characters/bg-panda.png';
 import charDificil from '../assets/characters/bg-alien.png';
-import charExperto from '../assets/characters/bg-necro.png';
+import charExperto from '../assets/characters/necro-entero.gif';
 import charMaster from '../assets/characters/bg-cyber.png';
 
 // --- Importaciones de Fondos ---
