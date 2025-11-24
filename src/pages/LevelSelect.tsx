@@ -6,7 +6,7 @@ import { supabase } from '../supabaseClient';
 import './LevelSelect.css'; 
 
 // Importamos el fondo de montañas (Asegúrate de que sea .jpg si ese es el archivo que tienes)
-import levelSelectBackground from '../assets/backgrounds/bg-levels.jpg';
+import levelSelectBackground from '../assets/backgrounds/bg-levels.png';
 
 // Interfaces
 interface MissionInfo {
