@@ -36,24 +36,9 @@ const backgroundMap: { [key: string]: string } = {
 };
 
 // --- Interfaces ---
-interface Choice {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-}
-interface QuizPayload {
-  title: string;
-  choices: Choice[];
-  scoring: { points: number; };
-  time_ms: number;
-  question: string;
-}
-interface Mission {
-  id: string;
-  level: number;
-  type: string; 
-  payload: QuizPayload;
-}
+interface Choice { id: string; text: string; isCorrect: boolean; }
+interface QuizPayload { title: string; choices: Choice[]; scoring: { points: number; }; time_ms: number; question: string; }
+interface Mission { id: string; level: number; type: string; payload: QuizPayload; }
 
 // --- Configuración de Progresión ---
 const LEVEL_TO_TEST_MAP: { [key: number]: number } = {
@@ -64,12 +49,10 @@ const TEST_TO_NEXT_LEVEL_MAP: { [key: number]: number } = {
 };
 
 
-// --- El Componente ---
 const QuizScreen: React.FC = () => {
   const { missionId } = useParams(); 
   const navigate = useNavigate();
 
-  // --- Estados ---
   const [currentMission, setCurrentMission] = useState<Mission | null>(null);
   const [characterImage, setCharacterImage] = useState<string | null>(null);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
@@ -82,7 +65,6 @@ const QuizScreen: React.FC = () => {
   const [isAnswered, setIsAnswered] = useState(false);
 
   
-  // --- useEffect ---
   useEffect(() => {
     const loadQuizData = async () => {
       setLoading(true);
@@ -99,9 +81,7 @@ const QuizScreen: React.FC = () => {
         return;
       }
       
-      // 1. Autenticación (CORREGIDO: Quitamos 'authError' que no se usaba)
       const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) {
         setError("No estás autenticado. Volviendo al login...");
         setLoading(false);
@@ -110,7 +90,7 @@ const QuizScreen: React.FC = () => {
       }
       setCurrentUserId(user.id);
 
-      // 2. Cargar Misión
+      // Cargar Misión
       const { data: missionData, error: missionError } = await supabase
         .from('missions')
         .select('*')
@@ -125,7 +105,7 @@ const QuizScreen: React.FC = () => {
         return;
       }
 
-      // 3. Crear Intento
+      // Crear Intento
       try {
         const { data: attemptData, error: attemptError } = await supabase
           .from('attempts')
@@ -142,25 +122,25 @@ const QuizScreen: React.FC = () => {
 
       } catch (attemptError: any) {
         console.error('Error al crear el intento:', attemptError);
+        // Si falla aquí, el usuario verá el error en pantalla en lugar de un botón roto
+        setError("Error de conexión al iniciar el nivel. Por favor recarga la página.");
+        setLoading(false);
+        return;
       }
 
-      // 4. Configurar UI
       const mission = missionData as Mission;
       setCurrentMission(mission);
       const missionType = mission.type; 
-      const charImgSrc = characterMap[missionType];
-      setCharacterImage(charImgSrc || charBasico); 
-      const backgroundImgSrc = backgroundMap[missionType]; 
-      setBackgroundImage(backgroundImgSrc || bgBasico); 
+      const charImgSrc = characterMap[missionType] || charBasico;
+      setCharacterImage(charImgSrc); 
+      const backgroundImgSrc = backgroundMap[missionType] || bgBasico; 
+      setBackgroundImage(backgroundImgSrc); 
       
       setLoading(false);
     };
-
     loadQuizData();
   }, [missionId, navigate]); 
 
-
-  // --- Funciones ---
 
   const handleOptionClick = (option: Choice) => {
     if (isAnswered) return;
@@ -168,8 +148,20 @@ const QuizScreen: React.FC = () => {
     setFeedback('');
   };
 
+  // --- FUNCION MODIFICADA CON ALERTAS DE DEPURACION ---
   const handleSubmitAnswer = async () => {
-    if (!selectedOptionId || isAnswered || !currentMission || !currentUserId || !currentAttemptId) return;
+    // 1. Comprobaciones de seguridad
+    if (!selectedOptionId) return;
+    if (isAnswered) return;
+
+    // Si falta algún dato crítico, AVISA al usuario
+    if (!currentMission) { alert("Error: Misión no cargada."); return; }
+    if (!currentUserId) { alert("Error: Sesión perdida."); return; }
+    if (!currentAttemptId) { 
+        alert("Error crítico: El intento no se inició correctamente. Por favor recarga la página."); 
+        return; 
+    }
+
     setIsAnswered(true);
 
     const chosenChoice = currentMission.payload.choices.find(
@@ -213,7 +205,6 @@ const QuizScreen: React.FC = () => {
     navigate('/levels');
   };
 
-  // --- Lógica de Progresión ---
   const handleNextMission = async () => {
     if (!currentMission || !currentUserId) return;
     setLoading(true); 
