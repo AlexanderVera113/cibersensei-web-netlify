@@ -23,14 +23,14 @@ import bgMaster from '../assets/backgrounds/bg-cyber-fondo.png';
 const characterMap: { [key: string]: string } = {
   'Basico': charBasico,
   'Intermedio': charIntermedio,
-  'dificil': charDificil,
+  'Dificil': charDificil,
   'Experto': charExperto,
   'Master': charMaster,
 };
 const backgroundMap: { [key: string]: string } = {
   'Basico': bgBasico,
   'Intermedio': bgIntermedio,
-  'dificil': bgDificil,
+  'Dificil': bgDificil,
   'Experto': bgExperto,
   'Master': bgMaster,
 };
