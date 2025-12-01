@@ -186,3 +186,88 @@
   color: #fff;
 }
 .error-screen { color: #ff3333; }
+
+.video-intro-section {
+  width: 100%;
+  margin-bottom: 20px; /* Espacio antes de los niveles */
+}
+
+.video-intro-button {
+  width: 100%;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #8e44ad; /* Morado (color del Mago/Necro) */
+  border: 4px solid #0e3a53;
+  padding: 20px;
+  cursor: pointer;
+  transition: transform 0.1s, background-color 0.2s;
+  text-align: center;
+  
+  /* Efecto de brillo sutil */
+  box-shadow: 0 0 15px rgba(142, 68, 173, 0.5);
+}
+
+.video-intro-button:hover {
+  background-color: #9b59b6; /* Morado más claro */
+  transform: scale(1.02);
+}
+
+/* ... (todo el CSS anterior) ... */
+
+/* --- Estilos del Modal de Video --- */
+
+.video-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semi-transparente */
+  z-index: 1000; /* Muy alto para estar encima de todo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px); /* Efecto borroso en el fondo */
+}
+
+.video-modal-content {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  background-color: #000;
+  border: 4px solid #8e44ad; /* Borde morado */
+  padding: 5px;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(142, 68, 173, 0.6);
+  animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.intro-video-player {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+
+.close-video-button {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background-color: #e74c3c;
+  border: 2px solid #fff;
+  color: #fff;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.close-video-button:hover {
+  background-color: #c0392b;
+}

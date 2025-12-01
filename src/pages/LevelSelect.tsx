@@ -5,8 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import './LevelSelect.css'; 
 
-// Importamos el fondo de montañas (Asegúrate de que sea .jpg si ese es el archivo que tienes)
+// Importamos el fondo
 import levelSelectBackground from '../assets/backgrounds/bg-levels.png';
+
+// IMPORTANTE: Importamos el video para que Vite maneje la ruta
+import introVideoUrl from '../assets/videos/Cibersensei_Modulo_1.mp4';
 
 // Interfaces
 interface MissionInfo {
@@ -20,7 +23,7 @@ interface UserProfile {
   xp: number;
 }
 
-// --- CONFIGURACIÓN DE ETAPAS ---
+// Configuración de Etapas
 const STAGES = [
   { title: 'Fundamentos (Básico)', min: 1, max: 8, testLevel: 9, style: 'basico' },
   { title: 'Amenazas (Intermedio)', min: 10, max: 17, testLevel: 18, style: 'intermedio' },
@@ -34,6 +37,10 @@ const LevelSelect: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estado para mostrar/ocultar el modal de video
+  const [showVideo, setShowVideo] = useState(false);
+
   const navigate = useNavigate(); 
 
   useEffect(() => {
@@ -41,7 +48,6 @@ const LevelSelect: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // 1. Usuario
       const { data: { user }, error: authError } = await supabase.auth.getUser();
 
       if (authError || !user) {
@@ -52,7 +58,6 @@ const LevelSelect: React.FC = () => {
         return;
       }
 
-      // 2. Consultas
       const fetchMissions = supabase
         .from('missions')
         .select('id, level, type, payload->title')
@@ -76,22 +81,16 @@ const LevelSelect: React.FC = () => {
         fetchStats
       ]);
 
-      // 3. Procesar resultados
       if (missionsResult.error) {
         console.error('Error cargando misiones:', missionsResult.error);
         setError('No se pudieron cargar los niveles.');
       } else if (missionsResult.data) {
-        
-        // --- ¡CORRECCIÓN AQUÍ! ---
-        // Convertimos explícitamente 'title' a String para evitar el error TS2345
         const formattedData = missionsResult.data.map(mission => ({
           id: mission.id,
           level: mission.level,
           type: mission.type,
           title: String(mission.title || 'Nivel sin título') 
         }));
-        // -------------------------
-
         setMissions(formattedData);
       }
 
@@ -125,6 +124,11 @@ const LevelSelect: React.FC = () => {
     }
   };
 
+  // Función simple para activar el modal
+  const handleWatchVideo = () => {
+    setShowVideo(true);
+  };
+
 
   if (loading) { return <div className="loading-screen">Cargando Niveles...</div>; }
   if (error) { return <div className="error-screen">{error}</div>; }
@@ -140,7 +144,7 @@ const LevelSelect: React.FC = () => {
       {/* --- Barra de Perfil --- */}
       {profile && (
         <div className="profile-bar">
-          <button className="profile-info-button" onClick={() => navigate('/ProfileScreen')}>
+          <button className="profile-info-button" onClick={() => navigate('/profile')}>
             <span className="profile-username">@{profile.username}</span>
             <span className="profile-xp">{profile.xp} XP</span>
           </button>
@@ -151,10 +155,38 @@ const LevelSelect: React.FC = () => {
         </div>
       )}
 
+      {/* --- MODAL DE VIDEO (POPUP INTERNO) --- */}
+      {showVideo && (
+        <div className="video-modal-overlay">
+          <div className="video-modal-content">
+            <button className="close-video-button" onClick={() => setShowVideo(false)}>
+              X CERRAR
+            </button>
+            
+            <video controls autoPlay className="intro-video-player">
+              {/* Usamos la variable importada */}
+              <source src={introVideoUrl} type="video/mp4" />
+              Tu navegador no soporta el elemento de video.
+            </video>
+          </div>
+        </div>
+      )}
+      {/* -------------------------------------- */}
+
+
       <h1 className="level-select-title">CiberSensei</h1>
       <h2 className="level-select-subtitle">Selección de Misión</h2>
 
       <div className="level-list">
+        
+        {/* Botón para abrir el video */}
+        <div className="video-intro-section">
+          <button className="video-intro-button" onClick={handleWatchVideo}>
+            📺 Ver Introducción al modulo Fundamentos
+          </button>
+        </div>
+
+        {/* Renderizado de Etapas */}
         {STAGES.map((stage) => {
           const stageMissions = missions.filter(m => m.level >= stage.min && m.level <= stage.max);
           const testMission = missions.find(m => m.level === stage.testLevel);
