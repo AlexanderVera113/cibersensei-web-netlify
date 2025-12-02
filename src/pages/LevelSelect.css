@@ -271,3 +271,46 @@
 .close-video-button:hover {
   background-color: #c0392b;
 }
+
+.level-button.locked {
+  background-color: #2a2a35; /* Gris oscuro */
+  border-color: #4a4a55;
+  color: #777;
+  cursor: not-allowed;
+  transform: none !important; /* Evita el efecto de escala al pasar el mouse */
+  box-shadow: none;
+}
+
+.level-button.locked:hover {
+  background-color: #2a2a35;
+  border-color: #4a4a55;
+}
+
+.locked-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+/* --- Estilos para Niveles Bloqueados --- */
+.level-button.locked {
+  background-color: #2a2a35;
+  border-color: #4a4a55;
+  color: #777;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+}
+.level-button.locked:hover {
+  background-color: #2a2a35;
+  border-color: #4a4a55;
+}
+.locked-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+/* Ajuste para el Jefe bloqueado */
+.level-button.boss.locked {
+  background-color: #2a1a1a;
+  border-color: #5a3a3a;
+}

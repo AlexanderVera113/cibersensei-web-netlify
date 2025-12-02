@@ -5,10 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import './LevelSelect.css'; 
 
-// Importamos el fondo
+// Fondo
 import levelSelectBackground from '../assets/backgrounds/bg-levels.png';
-
-// IMPORTANTE: Importamos el video para que Vite maneje la ruta
+// Video
 import introVideoUrl from '../assets/videos/Cibersensei_Modulo_1.mp4';
 
 // Interfaces
@@ -35,12 +34,14 @@ const STAGES = [
 const LevelSelect: React.FC = () => {
   const [missions, setMissions] = useState<MissionInfo[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  
+  // Estado para controlar el bloqueo
+  // Empieza en 1, así el Nivel 1 siempre está abierto
+  const [unlockedLevel, setUnlockedLevel] = useState<number>(1);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Estado para mostrar/ocultar el modal de video
   const [showVideo, setShowVideo] = useState(false);
-
   const navigate = useNavigate(); 
 
   useEffect(() => {
@@ -58,6 +59,7 @@ const LevelSelect: React.FC = () => {
         return;
       }
 
+      // Consultas
       const fetchMissions = supabase
         .from('missions')
         .select('id, level, type, payload->title')
@@ -75,10 +77,15 @@ const LevelSelect: React.FC = () => {
         .eq('user_id', user.id)
         .single();
 
-      const [missionsResult, profileResult, statsResult] = await Promise.all([
+      // ¡IMPORTANTE! Consultamos el progreso para saber qué desbloquear
+      const fetchProgress = supabase
+        .rpc('get_max_completed_level', { user_id_input: user.id });
+
+      const [missionsResult, profileResult, statsResult, progressResult] = await Promise.all([
         fetchMissions,
         fetchProfile,
-        fetchStats
+        fetchStats,
+        fetchProgress
       ]);
 
       if (missionsResult.error) {
@@ -104,6 +111,17 @@ const LevelSelect: React.FC = () => {
           xp: userXP
         });
       }
+
+      // Procesar Progreso
+      if (progressResult.error) {
+        console.error('Error cargando progreso:', progressResult.error);
+        // Si falla, por defecto dejamos abierto solo el 1
+        setUnlockedLevel(1);
+      } else {
+        const maxCompleted = progressResult.data || 0;
+        // El nivel desbloqueado es siempre el siguiente al completado
+        setUnlockedLevel(maxCompleted + 1);
+      }
       
       setLoading(false);
     };
@@ -117,14 +135,9 @@ const LevelSelect: React.FC = () => {
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) {
-      alert(error.message);
-    } else {
-      navigate('/');
-    }
+    if (error) { alert(error.message); } else { navigate('/'); }
   };
 
-  // Función simple para activar el modal
   const handleWatchVideo = () => {
     setShowVideo(true);
   };
@@ -141,7 +154,7 @@ const LevelSelect: React.FC = () => {
       }}
     >
       
-      {/* --- Barra de Perfil --- */}
+      {/* Barra de Perfil */}
       {profile && (
         <div className="profile-bar">
           <button className="profile-info-button" onClick={() => navigate('/profile')}>
@@ -155,38 +168,33 @@ const LevelSelect: React.FC = () => {
         </div>
       )}
 
-      {/* --- MODAL DE VIDEO (POPUP INTERNO) --- */}
+      {/* Modal de Video */}
       {showVideo && (
         <div className="video-modal-overlay">
           <div className="video-modal-content">
             <button className="close-video-button" onClick={() => setShowVideo(false)}>
               X CERRAR
             </button>
-            
             <video controls autoPlay className="intro-video-player">
-              {/* Usamos la variable importada */}
               <source src={introVideoUrl} type="video/mp4" />
               Tu navegador no soporta el elemento de video.
             </video>
           </div>
         </div>
       )}
-      {/* -------------------------------------- */}
-
 
       <h1 className="level-select-title">CiberSensei</h1>
       <h2 className="level-select-subtitle">Selección de Misión</h2>
 
       <div className="level-list">
         
-        {/* Botón para abrir el video */}
         <div className="video-intro-section">
           <button className="video-intro-button" onClick={handleWatchVideo}>
-            📺 Ver Introducción al modulo Fundamentos
+            📺 Ver Introducción al Curso
           </button>
         </div>
 
-        {/* Renderizado de Etapas */}
+        {/* RENDERIZADO POR ETAPAS CON BLOQUEO */}
         {STAGES.map((stage) => {
           const stageMissions = missions.filter(m => m.level >= stage.min && m.level <= stage.max);
           const testMission = missions.find(m => m.level === stage.testLevel);
@@ -198,30 +206,53 @@ const LevelSelect: React.FC = () => {
               <h3 className="stage-title">{stage.title}</h3>
               
               <div className="stage-grid">
-                {stageMissions.map((mission) => (
-                  <button 
-                    key={mission.id}
-                    className={`level-button normal type-${stage.style}`}
-                    onClick={() => handleLevelClick(mission.id)}
-                  >
-                    <span className="level-number">{mission.level}</span>
-                    <span className="level-title-small">{mission.title}</span>
-                  </button>
-                ))}
+                {stageMissions.map((mission) => {
+                  // Lógica de Bloqueo: Si el nivel de la misión es mayor al desbloqueado
+                  const isLocked = mission.level > unlockedLevel;
+
+                  return (
+                    <button 
+                      key={mission.id}
+                      className={`level-button normal type-${stage.style} ${isLocked ? 'locked' : ''}`}
+                      // Solo permite clic si NO está bloqueado
+                      onClick={() => !isLocked && handleLevelClick(mission.id)}
+                      disabled={isLocked}
+                    >
+                      {isLocked ? (
+                        <span className="locked-icon">🔒</span>
+                      ) : (
+                        <>
+                          <span className="level-number">{mission.level}</span>
+                          <span className="level-title-small">{mission.title}</span>
+                        </>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
-              {testMission && (
-                <button 
-                  className={`level-button boss type-${stage.style}`}
-                  onClick={() => handleLevelClick(testMission.id)}
-                >
-                  <span className="boss-icon">💀</span>
-                  <div className="boss-info">
-                    <span className="boss-label">PRUEBA DE ASCENSO</span>
-                    <span className="boss-title">{testMission.title}</span>
-                  </div>
-                </button>
-              )}
+              {testMission && (() => {
+                const isBossLocked = testMission.level > unlockedLevel;
+                return (
+                  <button 
+                    className={`level-button boss type-${stage.style} ${isBossLocked ? 'locked' : ''}`}
+                    onClick={() => !isBossLocked && handleLevelClick(testMission.id)}
+                    disabled={isBossLocked}
+                  >
+                    {isBossLocked ? (
+                      <span className="boss-icon">🔒</span>
+                    ) : (
+                      <span className="boss-icon">💀</span>
+                    )}
+                    <div className="boss-info">
+                      <span className="boss-label">PRUEBA DE ASCENSO</span>
+                      <span className="boss-title">
+                        {isBossLocked ? "Bloqueado" : testMission.title}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })()}
             </div>
           );
         })}
