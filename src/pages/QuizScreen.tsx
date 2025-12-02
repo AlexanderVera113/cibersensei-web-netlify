@@ -6,18 +6,18 @@ import { supabase } from '../supabaseClient';
 import './QuizScreen.css';
 
 // --- Importaciones de Personajes ---
-import charBasico from '../assets/characters/cat_enteroi.gif';
-import charIntermedio from '../assets/characters/bg-panda.png';
+import charBasico from '../assets/characters/2.gif';
+import charIntermedio from '../assets/characters/3.gif';
 import charDificil from '../assets/characters/bg-alien.png';
 import charExperto from '../assets/characters/bg-necro.gif';
 import charMaster from '../assets/characters/bg-cyber.png';
 
 // --- Importaciones de Fondos ---
-import bgBasico from '../assets/backgrounds/bg-cat-fondo.png';
-import bgIntermedio from '../assets/backgrounds/bg-panda-fondo.png';
-import bgDificil from '../assets/backgrounds/bg-alien-fondo.png';
-import bgExperto from '../assets/backgrounds/bg-necro-fondo.png';
-import bgMaster from '../assets/backgrounds/bg-cyber-fondo.png';
+import bgBasico from '../assets/backgrounds/bg-cat-fondo.webp';
+import bgIntermedio from '../assets/backgrounds/bg-panda-fondo.webp';
+import bgDificil from '../assets/backgrounds/bg-alien-fondo.webp';
+import bgExperto from '../assets/backgrounds/bg-necro-fondo.webp';
+import bgMaster from '../assets/backgrounds/bg-cyber-fondo.webp';
 
 // --- Mapas de Assets ---
 const characterMap: { [key: string]: string } = {

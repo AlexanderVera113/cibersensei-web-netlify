@@ -6,9 +6,15 @@ import { supabase } from '../supabaseClient';
 import './LevelSelect.css'; 
 
 // Fondo
-import levelSelectBackground from '../assets/backgrounds/bg-levels.png';
-// Video
-import introVideoUrl from '../assets/videos/Cibersensei_Modulo_1.mp4';
+import levelSelectBackground from '../assets/backgrounds/bg-levels.webp';
+
+// --- IMPORTACIÓN DE VIDEOS ---
+import introVideoUrl1 from '../assets/videos/Cibersensei_Modulo_1.mp4';
+// Asegúrate de tener este archivo, o usa el 1 como prueba
+import introVideoUrl2 from '../assets/videos/Cibersensei_Modulo_2.mp4'; 
+
+// Icono
+import introIconImg from '../assets/icon/content.png'; 
 
 // Interfaces
 interface MissionInfo {
@@ -22,11 +28,24 @@ interface UserProfile {
   xp: number;
 }
 
-// Configuración de Etapas
+// --- CONFIGURACIÓN DE ETAPAS ---
 const STAGES = [
-  { title: 'Fundamentos (Básico)', min: 1, max: 8, testLevel: 9, style: 'basico' },
-  { title: 'Amenazas (Intermedio)', min: 10, max: 17, testLevel: 18, style: 'intermedio' },
-  { title: 'Defensa (Difícil)', min: 19, max: 26, testLevel: 27, style: 'dificil' },
+  { 
+    title: 'Fundamentos (Básico)', 
+    min: 1, max: 8, testLevel: 9, style: 'basico',
+    introVideo: introVideoUrl1,
+    videoTitle: 'Introducción: Fundamentos'
+  },
+  { 
+    title: 'Amenazas (Intermedio)', 
+    min: 10, max: 17, testLevel: 18, style: 'intermedio',
+    introVideo: introVideoUrl2, // Aquí iría el video 2 cuando lo tengas
+    videoTitle: 'Introducción: Phishing'
+  },
+  { 
+    title: 'Defensa (Difícil)', 
+    min: 19, max: 26, testLevel: 27, style: 'dificil' 
+  },
   { title: 'Hacking Ético (Experto)', min: 28, max: 35, testLevel: 36, style: 'experto' },
   { title: 'Ciberseguridad Total (Master)', min: 37, max: 44, testLevel: 45, style: 'master' },
 ];
@@ -34,14 +53,13 @@ const STAGES = [
 const LevelSelect: React.FC = () => {
   const [missions, setMissions] = useState<MissionInfo[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  
-  // Estado para controlar el bloqueo
-  // Empieza en 1, así el Nivel 1 siempre está abierto
   const [unlockedLevel, setUnlockedLevel] = useState<number>(1);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showVideo, setShowVideo] = useState(false);
+  
+  // Estado para controlar QUÉ video se está reproduciendo
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
+
   const navigate = useNavigate(); 
 
   useEffect(() => {
@@ -50,7 +68,6 @@ const LevelSelect: React.FC = () => {
       setError(null);
 
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-
       if (authError || !user) {
         console.error("No hay usuario logueado:", authError);
         setError("No estás autenticado.");
@@ -59,7 +76,6 @@ const LevelSelect: React.FC = () => {
         return;
       }
 
-      // Consultas
       const fetchMissions = supabase
         .from('missions')
         .select('id, level, type, payload->title')
@@ -77,7 +93,6 @@ const LevelSelect: React.FC = () => {
         .eq('user_id', user.id)
         .single();
 
-      // ¡IMPORTANTE! Consultamos el progreso para saber qué desbloquear
       const fetchProgress = supabase
         .rpc('get_max_completed_level', { user_id_input: user.id });
 
@@ -112,14 +127,11 @@ const LevelSelect: React.FC = () => {
         });
       }
 
-      // Procesar Progreso
       if (progressResult.error) {
         console.error('Error cargando progreso:', progressResult.error);
-        // Si falla, por defecto dejamos abierto solo el 1
         setUnlockedLevel(1);
       } else {
         const maxCompleted = progressResult.data || 0;
-        // El nivel desbloqueado es siempre el siguiente al completado
         setUnlockedLevel(maxCompleted + 1);
       }
       
@@ -138,9 +150,15 @@ const LevelSelect: React.FC = () => {
     if (error) { alert(error.message); } else { navigate('/'); }
   };
 
-  const handleWatchVideo = () => {
-    setShowVideo(true);
+  // --- FUNCIONES DEL MODAL ---
+  const openVideo = (url: string) => {
+    setActiveVideo(url); // Establece el video y abre el modal
   };
+
+  const closeVideo = () => {
+    setActiveVideo(null); // Cierra el modal
+  };
+  // --------------------------
 
 
   if (loading) { return <div className="loading-screen">Cargando Niveles...</div>; }
@@ -157,7 +175,7 @@ const LevelSelect: React.FC = () => {
       {/* Barra de Perfil */}
       {profile && (
         <div className="profile-bar">
-          <button className="profile-info-button" onClick={() => navigate('/profile')}>
+          <button className="profile-info-button" onClick={() => navigate('/ProfileScreen')}>
             <span className="profile-username">@{profile.username}</span>
             <span className="profile-xp">{profile.xp} XP</span>
           </button>
@@ -168,33 +186,31 @@ const LevelSelect: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de Video */}
-      {showVideo && (
+      {/* --- MODAL DE VIDEO DINÁMICO --- */}
+      {/* Solo se muestra si 'activeVideo' tiene una URL */}
+      {activeVideo && (
         <div className="video-modal-overlay">
           <div className="video-modal-content">
-            <button className="close-video-button" onClick={() => setShowVideo(false)}>
+            <button className="close-video-button" onClick={closeVideo}>
               X CERRAR
             </button>
+            
             <video controls autoPlay className="intro-video-player">
-              <source src={introVideoUrl} type="video/mp4" />
+              {/* La 'key' fuerza a React a recargar el video si cambia la URL */}
+              <source key={activeVideo} src={activeVideo} type="video/mp4" />
               Tu navegador no soporta el elemento de video.
             </video>
           </div>
         </div>
       )}
+      {/* ------------------------------ */}
 
       <h1 className="level-select-title">CiberSensei</h1>
       <h2 className="level-select-subtitle">Selección de Misión</h2>
 
       <div className="level-list">
         
-        <div className="video-intro-section">
-          <button className="video-intro-button" onClick={handleWatchVideo}>
-            📺 Ver Introducción al Curso
-          </button>
-        </div>
-
-        {/* RENDERIZADO POR ETAPAS CON BLOQUEO */}
+        {/* Renderizado de Etapas */}
         {STAGES.map((stage) => {
           const stageMissions = missions.filter(m => m.level >= stage.min && m.level <= stage.max);
           const testMission = missions.find(m => m.level === stage.testLevel);
@@ -203,18 +219,32 @@ const LevelSelect: React.FC = () => {
 
           return (
             <div key={stage.title} className={`stage-section stage-${stage.style}`}>
-              <h3 className="stage-title">{stage.title}</h3>
+              
+              {/* Cabecera de Etapa con Botón de Video */}
+              <div className="stage-header">
+                <h3 className="stage-title">{stage.title}</h3>
+                
+                {stage.introVideo && (
+                  <div className="video-intro-section">
+                    <button 
+                      className="video-intro-button" 
+                      onClick={() => openVideo(stage.introVideo!)}
+                    >
+                      <img src={introIconImg} alt="Icono Intro" className="video-button-icon" />
+                      <span>{stage.videoTitle || 'Ver Intro'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               
               <div className="stage-grid">
                 {stageMissions.map((mission) => {
-                  // Lógica de Bloqueo: Si el nivel de la misión es mayor al desbloqueado
                   const isLocked = mission.level > unlockedLevel;
-
                   return (
                     <button 
                       key={mission.id}
                       className={`level-button normal type-${stage.style} ${isLocked ? 'locked' : ''}`}
-                      // Solo permite clic si NO está bloqueado
                       onClick={() => !isLocked && handleLevelClick(mission.id)}
                       disabled={isLocked}
                     >

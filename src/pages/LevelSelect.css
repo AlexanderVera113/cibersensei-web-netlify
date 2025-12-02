@@ -187,9 +187,15 @@
 }
 .error-screen { color: #ff3333; }
 
+/* src/pages/LevelSelect.css */
+
+/* ... (tus otros estilos) ... */
+
+/* --- ESTILOS DEL BOTÓN DE VIDEO ACTUALIZADOS --- */
+
 .video-intro-section {
   width: 100%;
-  margin-bottom: 20px; /* Espacio antes de los niveles */
+  margin-bottom: 20px;
 }
 
 .video-intro-button {
@@ -197,23 +203,34 @@
   font-family: 'Press Start 2P', cursive;
   font-size: 1rem;
   color: #fff;
-  background-color: #8e44ad; /* Morado (color del Mago/Necro) */
+  background-color: #f1c40f; /* Morado */
   border: 4px solid #0e3a53;
-  padding: 20px;
+  padding: 15px;
   cursor: pointer;
   transition: transform 0.1s, background-color 0.2s;
-  text-align: center;
   
-  /* Efecto de brillo sutil */
+  /* --- CAMBIOS PARA ALINEAR IMAGEN Y TEXTO --- */
+  display: flex;           /* Activa Flexbox */
+  align-items: center;     /* Centra verticalmente */
+  justify-content: center; /* Centra horizontalmente */
+  gap: 15px;               /* Espacio entre la imagen y el texto */
+  /* ----------------------------------------- */
+  
   box-shadow: 0 0 15px rgba(142, 68, 173, 0.5);
 }
 
 .video-intro-button:hover {
-  background-color: #9b59b6; /* Morado más claro */
+  background-color: #a33d3d;
   transform: scale(1.02);
 }
 
-/* ... (todo el CSS anterior) ... */
+/* --- NUEVA CLASE PARA EL ICONO DE IMAGEN --- */
+.video-button-icon {
+  width: 32px;   /* Tamaño del icono (ajústalo si quieres) */
+  height: auto;
+  image-rendering: pixelated; /* Crucial para que el pixel art se vea nítido */
+}
+/* ------------------------------------------ */
 
 /* --- Estilos del Modal de Video --- */
 
@@ -313,4 +330,66 @@
 .level-button.boss.locked {
   background-color: #2a1a1a;
   border-color: #5a3a3a;
+}
+
+/* Fuente pixel */
+.cs-intro-banner,
+.cs-intro-text {
+  font-family: "Press Start 2P", system-ui, sans-serif;
+}
+
+/* Barra morada retro */
+.cs-intro-banner {
+  display: inline-flex;
+  width: 100%; /* Para que ocupe el ancho disponible del contenedor */
+  align-items: center;
+  justify-content: center; /* Centra el contenido */
+  gap: 15px;
+  padding: 14px 24px;
+  background-color: #e67e22;    /* morado sólido */
+  border: 4px solid #f7e9ff;    /* borde claro */
+  box-shadow:
+    0 0 0 2px #1b0b33,
+    0 0 18px #e67e22  ;  /* glow leve */
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  margin-bottom: 20px; /* Espacio antes de los niveles */
+}
+
+/* Efecto “pixel hover” */
+.cs-intro-banner:hover {
+  background-color: #a32cf0;
+  box-shadow:
+    0 0 0 2px #1b0b33,
+    0 0 24px rgba(255, 0, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Icono contenedor */
+.cs-intro-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #1b0b33;
+  border: 3px solid #32f5ff;   /* cian neón */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  image-rendering: pixelated;
+  font-size: 16px; /* Para el emoji si no hay imagen */
+}
+
+.cs-intro-icon img {
+  width: 28px;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* Texto dentro del botón */
+.cs-intro-text {
+  line-height: 1.4;
 }
